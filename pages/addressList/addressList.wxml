@@ -1,0 +1,126 @@
+<!--pages/addressList/addressList.wxml-->
+
+<!-- part1 - 搜索区域 -->
+<view class="search-form">
+  <!-- 搜索区 -->
+  <view class="search">
+    <!-- 假的搜索框 -->
+    <view wx:if="{{!searchModel}}" class="search-model search-model-one" bindtap="showSearch">
+      <image class="icon" src="../../public/img/icon_search.png"></image>
+      <text class="search-model-one-text">搜索</text>
+    </view>
+    <!-- 真的搜索框 -->
+    <view wx:if="{{searchModel}}" class="search-model search-model-two">
+      <image class="icon search-model-two-icon" src="../../public/img/icon_search.png"></image>
+      <!-- 多加层 view 的作用是做到 × 的定位作用 -->
+      <view class="search-model-two-form">
+        <input type="text" class="search-model-two-input" placeholder="搜索" focus="{{inputFocus}}" value="{{searchVal}}" bindinput="monitorInputVal"></input>
+        <text wx:if="{{searchVal.length > 0}}" class="clear-input" bindtap="clearInput">×</text>
+      </view>
+      <text wx:if="{{searchVal.length <= 0}}" class="search-model-two-button search-model-two-button-cancel" bindtap="showSearch">取消</text>
+      <text wx:if="{{searchVal.length > 0}}" class="search-model-two-button search-model-two-button-submit" bindtap="searchSubmit">搜索</text>
+    </view>
+  </view>
+  <!-- 功能区 -->
+  <view class="action">
+    <text class="action-button action-add" bindtap="showAdd">添加</text>
+    <text wx:if="{{!deleteModel}}" class="action-button action-delete" bindtap="showDelete">删除</text>
+    <text wx:if="{{deleteModel}}" class="action-button action-delete-comfirm" bindtap="showDelete">完成</text>
+  </view>
+</view>
+
+<!-- part2 - 搜索结果 -->
+<view wx:if="{{searchModel}}" class="search-result">
+  <view class="search-result-item" wx:for="{{searchData}}" wx:key="{{searchData.index}}">
+    <view class="search-result-item-left">
+      <text class="search-result-item-left-name">{{item.userName}}</text>
+      <text class="search-result-item-left-phone">{{item.userPhone}}</text>
+    </view>
+    <view class="search-result-item-right">
+      <image class="icon search-result-item-right-edit" src="../../public/img/icon_edit.png"></image>
+      <image wx:if="{{deleteModel}}" class="icon search-result-item-right-delete" src="../../public/img/icon_delete.png"></image>
+    </view>
+  </view>
+</view>
+
+<!-- part3 - 内容区域 -->
+<view class="contacts-list">
+  <!-- 每组字母数据 -->
+  <view class="contacts-item" wx:for="{{contactsData}}" wx:for-item="contactsDataItem" wx:key="{{contactsDataItem.index}}">
+    <!-- 字母标题 -->
+    <view wx:if="{{!contactsDataItem.users.length < 1}}" class="contacts-list-title">
+      <text>{{contactsDataItem.groupName}}</text>
+    </view>
+    <!-- 该组字母的成员 -->
+    <view class="contacts-list-user" wx:for="{{contactsDataItem.users}}" wx:for-item="usersItem" wx:for-index="userIndex" wx:key="{{usersItem.index}}">
+      <!-- 成员信息展示 -->
+      <view class="contacts-list-user-left">
+        <text class="contacts-list-user-left-name">{{usersItem.userName}}</text>
+        <text class="contacts-list-user-left-phone">{{usersItem.userPhone}}</text>
+      </view>
+      <!-- 成员操作 -->
+      <view class="contacts-list-user-right">
+        <image class="icon contacts-list-user-right-edit" src="../../public/img/icon_edit.png" bindtap="showEdit" data-groupname="{{contactsDataItem.groupName}}" data-username="{{usersItem.userName}}" data-userphone="{{usersItem.userPhone}}"></image>
+        <image wx:if="{{deleteModel}}" class="icon contacts-list-user-right-delete" src="../../public/img/icon_delete.png" bindtap="deleteConfirm" data-groupname="{{contactsDataItem.groupName}}" data-username="{{usersItem.userName}}" data-index="{{userIndex}}"></image>
+      </view>
+    </view>
+  </view>
+</view>
+
+<!-- part4 - 拼音导航 -->
+<view class="pinyin-nav">
+  <view wx:for="{{letters}}" wx:key="{{letters.index}}">
+    <text class="pinyin-nav-byte" data-byte="{{item}}" bindtap="pinyinNav">{{item}}</text>
+  </view>
+</view>
+
+<!-- part5 - 底部导航 -->
+<view class="bottom-nav">
+  <navBar homeActive="{{homeActive}}"></navBar>
+</view>
+
+<!-- part6 - 新增弹窗 -->
+<view wx:if="{{addModel}}" class="add-prompt">
+  <!-- 遮罩层 -->
+  <view class="jsbao-mask" bindtap='showAdd'></view>
+  <!-- 弹窗内容 -->
+  <view class="jsbao-alert">
+    <!-- 标题 -->
+    <view class="jsbao-alert-title">
+      <text>添加成员</text>
+      <text class="jsbao-alert-title-close" bindtap='showAdd'>×</text>
+    </view>
+    <!-- 输入内容 -->
+    <view class="jsbao-alert-content">
+      <input type="text" placeholder='请输入姓名' placeholder-class='jsbao-alert-content-user-name-placeholder' name="addUserName" bindinput='getAddUserName' maxlength='11' value="{{addUserName}}"></input>
+      <input type="text" placeholder='请输入电话号码' placeholder-class='jsbao-alert-content-user-phone-placeholder' name="addUserPhone" bindinput='getAddUserPhone' maxlength='11' value="{{addUserPhone}}"></input>
+    </view>
+    <!-- 确定 -->
+    <view class="jsbao-alert-submit" bindtap='addConfirm'>
+      <text>添加</text>
+    </view>
+  </view>
+</view>
+
+<!-- part7 - 修改弹窗 -->
+<view wx:if="{{editModel}}" class="edit-prompt">
+  <!-- 遮罩层 -->
+  <view class="jsbao-mask" bindtap='showEdit'></view>
+  <!-- 弹窗内容 -->
+  <view class="jsbao-alert">
+    <!-- 标题 -->
+    <view class="jsbao-alert-title">
+      <text>修改成员</text>
+      <text class="jsbao-alert-title-close" bindtap='showEdit'>×</text>
+    </view>
+    <!-- 输入内容 -->
+    <view class="jsbao-alert-content">
+      <input type="text" placeholder='请输入姓名' placeholder-class='jsbao-alert-content-user-name-placeholder' name="editUserName" bindinput='getEditUserName' maxlength='11' value="{{editNewUserName}}"></input>
+      <input type="text" class="input-forbid" placeholder='请输入电话号码' placeholder-class='jsbao-alert-content-user-phone-placeholder' name="editUserPhone" bindinput='getEditUserPhone' maxlength='11' value="{{editUserPhone}}" disabled="disabled"></input>
+    </view>
+    <!-- 确定 -->
+    <view class="jsbao-alert-submit" bindtap='editConfirm'>
+      <text>修改</text>
+    </view>
+  </view>
+</view>
